@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo_examples6/screen/add_task_screen.dart';
 import 'package:todo_examples6/task.dart';
 import 'package:todo_examples6/widgets/filter_buttons.dart';
 import 'package:todo_examples6/widgets/task_list_item.dart';
@@ -10,12 +11,8 @@ class TaskScreen extends StatefulWidget {
 
 class _TaskScreenState extends State<TaskScreen> {
   TaskFilter _selectedTaskFilter = TaskFilter.all;
-
-  @override
-  void initState() {
-    super.initState();
-    // _filterData(_selectedTaskFilter);
-  }
+  var _filteredList = [...taskList];
+  var _rawList = [...taskList];
 
   _filterData(TaskFilter filter) {
     setState(() {
@@ -25,12 +22,11 @@ class _TaskScreenState extends State<TaskScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var _filteredList = taskList;
-    var allList = _filteredList.where((e) => e.isDeleted == false).toList();
-    var doneList = _filteredList
+    var allList = _rawList.where((e) => e.isDeleted == false).toList();
+    var doneList = _rawList
         .where((e) => e.toDone == true && e.isDeleted == false)
         .toList();
-    var deletedList = _filteredList.where((e) => e.isDeleted == true).toList();
+    var deletedList = _rawList.where((e) => e.isDeleted == true).toList();
 
     switch (_selectedTaskFilter) {
       case TaskFilter.all:
@@ -48,8 +44,24 @@ class _TaskScreenState extends State<TaskScreen> {
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
         child: Icon(Icons.add),
+        onPressed: () async {
+          String newTaskName = await showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return AddTaskScreen();
+              });
+          print(newTaskName);
+
+          setState(() {
+            _rawList.add(Task(
+                taskName: newTaskName,
+                toDone: false,
+                editMode: false,
+                isDeleted: false,
+                taskFilter: TaskFilter.all));
+          });
+        },
       ),
       body: SafeArea(
         child: Column(
